@@ -225,11 +225,11 @@ Clean = Readable + Understanding
 		</tr>
 		<tr>
 			<td>Convert</td>
-			<td>Convert to another type类型转换(通常用于从一个类型转换到另一种类型)</td>
+			<td>Convert to another type</td>
 		</tr>
 		<tr>
 			<td>Format</td>
-			<td>Format data格式化数据</td>
+			<td>Format data</td>
 		</tr>
 		<tr>
 			<td>Validate</td>
