@@ -4,17 +4,16 @@ Clean = Readable + Understanding
 
 # Naming
 
-## Common Prefix
+## Common prefix
 
-  - is
+- is
 
-  - can
+- can
 
-  - has/icludes/contains
+- has/icludes/contains
 
-  - should/needs
-<br>
-  
+- should/needs
+
 ## Create/Destroy
 
  <table class="table table-bordered table-striped table-condensed">
@@ -41,7 +40,6 @@ Clean = Readable + Understanding
 		</tr>
 	</tbody>
 </table>
-<br>
 
 ## Get/Set
 <table class="table table-bordered table-striped table-condensed">
@@ -96,7 +94,6 @@ Clean = Readable + Understanding
 		</tr>
 	</tbody>
 </table>
-<br>
 
 ## Update
 
@@ -116,7 +113,6 @@ Clean = Readable + Understanding
 		</tr>
 	</tbody>
 </table>
-<br>
 
 ## Add/Remove
 <table class="table table-bordered table-striped table-condensed">
@@ -143,7 +139,6 @@ Clean = Readable + Understanding
 		</tr>
 	</tbody>
 </table>
-<br>
 
 ## Start/Stop
 <table class="table table-bordered table-striped table-condensed">
@@ -178,7 +173,6 @@ Clean = Readable + Understanding
 		</tr>
 	</tbody>
 </table>
-<br>
 
 ## Handle data from list
 <table class="table table-bordered table-striped table-condensed">
@@ -217,7 +211,6 @@ Clean = Readable + Understanding
 		</tr>
 	</tbody>
 </table>
-<br>
 
 ## Common verbs
 <table class="table table-bordered table-striped table-condensed">
@@ -293,3 +286,275 @@ Clean = Readable + Understanding
 	</tbody>
 </table>
 <br>
+
+# Functions
+Clean functions should be small and do only one thing
+
+## Parameters
+Keep the number of parameters small. Use a dictionary or Object to group multiple parameters
+
+## Level of abstraction
+Do not mix levels of abstraction in a function
+```javascript
+// Need to understand and interpret the different steps
+if(!email.includes('@')) {
+  console.log('Invalid email');
+} else {
+  const user = new User(email);
+  user.save();
+}
+```
+
+```javascript
+// Just need to read the different steps
+if(!isEmail(email)) {
+  showError('Invalid email');
+} else {
+  saveNewUser(email);
+}
+```
+
+## Pure functions
+
+- Same input always returns same result
+
+- No side effects during execution(console, change the external data, API calling)
+
+```javascript
+// Not a pure function
+function connectDB() {
+  const didConnect = database.connnect();
+  if(didConnect) {
+    return true;
+  } else {
+    console.log('Could not connect to database!');
+    return false;
+  }
+}
+```
+
+```javascript
+// Optimize to a pure function
+function initApp() {
+  const success = connectDB();
+  if(!success) {
+    console.log('Could not connect to database!');
+  }
+  // ...
+}
+
+function connectDB() {
+  const didConnect = database.connnect();
+  return didConnect;
+}
+```
+
+## Test driven functions
+
+```javascript
+// Hard to test the method partially
+function addProduct(name, price) {
+    if(!name || name.trim() === '' || !price || price < 0 ) {
+        console.log('Invalid input - product was not created.');
+        return;
+    }
+    
+    const product = {
+        id: name + '-' + Math.random().toString(),
+        name: name,
+        price: price
+    };
+    database.insert('products', product);
+    return product;
+}
+```
+
+```javascript
+// Split each process
+function addProduct(name, price) {
+    validateProductData(name, price);
+
+    const savedProduct = saveProduct(name, price);
+    return savedProduct;
+}
+
+function validateProductData(name, price) {
+    if(!inputIsValid(name, price)) {
+        throw new Error('Invalid input - product was not created.');
+    }
+}
+
+function inputIsValid(name, price) {
+    return !isEmpty(name) && hasMinValue(price, 0);
+}
+```
+
+## Do not use boolean parameters
+
+```javascript
+// Call methods, hard to understand
+printWelcomeWords(true);
+calFinalAmount(200, true);
+
+function printWelcomeWords(isActivated) {
+    if (isActivated) {
+        console.log('Welcome! Please select your product.');
+    } else {
+        console.log('Welcome! Please activate your account.');
+    }
+}
+
+function calFinalAmount(originalAmount, isChild) {
+    if (isChild) {
+        return originalAmount * 0.5;
+    } else {
+        return originalAmount;
+    }
+}
+```
+
+```javascript
+// Call methods, easy to understand
+printWelcomeWordsOnActivated();
+calFinalAmountForChild(200);
+calFinalAmountForAdult(200);
+
+function printWelcomeWordsOnActivated() {
+    console.log('Welcome! Please select your product.');
+}
+
+function printWelcomeWordsOnUnactivated() {
+    console.log('Welcome! Please activate your account.');
+}
+
+function calFinalAmountForChild(originalAmount) {
+    return originalAmount * 0.5;
+}
+
+function calFinalAmountForAdult(originalAmount) {
+    return originalAmount;
+}
+```
+<br>
+
+# Objects
+
+## Law of Demeter
+- Method within a class only interact with its direct friends
+  - The variables, method parameters and method return objects within the class
+- The local variables are not direct friends.
+
+```java
+// Violates the Law of Demeter, interact with local variable: Employee
+public class Company {
+    private Manager manager = new Manager();
+    
+    public void printEmployees(String name) {
+        List<Employee> employeeList = manager.getEmployees(name);
+        for(Employee employee : employeeList) {
+            System.out.println(employee.getName());
+        }
+    }
+}
+```
+
+```java
+// Follows the Law of Demeter.
+public class Company {
+    private Manager manager = new Manager();
+    
+    public void printEmployees(String name) {
+        manager.printEmployee(name);
+    }
+}
+```
+
+## SOLID principle
+- 'S' and 'O' make code clean
+  - Single responsibility Principle
+    - each class does one thing, as small as possible
+  - Open-closed Principle
+    - a class should be open for extension but closed for modification
+    - Reduce redundant code
+- High cohesion
+  - how well the methods of a class are using the class properties
+
+## Strategy design pattern
+
+```javascript
+let mapCalculate = {
+    'add': function (num1, num2) {
+        return num1 + num2;
+    },
+    'sub': function (num1, num2) {
+        return num1 - num2;
+    },
+    'mul': function (num1, num2) {
+        return num1 * num2;
+    },
+    'div': function (num1, num2) {
+        return num1 / num2;
+    },
+}
+
+function calculate(command, num1, num2) {
+    return mapCalculate[command](num1, num2);
+}
+```
+
+```javascript
+class Calculator {
+    constructor() {
+        this.strategy = null;
+    }
+    
+    // Strategy can be changed dynamically
+    setStrategy(strategy) {
+        this.strategy = strategy;
+    }
+    
+    calculateResult(num1, num2) {
+        return this.strategy.execute(num1, num2);
+    }
+}
+
+class Add {
+    execute(num1, num2) {
+        return num1 + num2;
+    }
+}
+
+class Sub {
+    execute(num1, num2) {
+        return num1 - num2;
+    }
+}
+
+//...
+```
+<br>
+
+# Tips
+
+## Lines
+Keep lines short
+
+## Comments
+- Good code does not need too many comments
+- Only use when:
+  - Explanations that can’t be replaced by good naming 
+  - Warnings 
+  - Todo notes
+
+
+## Elegant string concatenation
+```javascript
+// C++: snprintf, stringstream
+// C#: string.Format
+// Java: String.format
+
+let userId = 'foo';
+let userName = 'bar';
+let userInfo = 'User Info: Id: ${userId} Name: ${userName}.';
+let headerContent = 'start | ${userId} | ${userName} | end';
+```
